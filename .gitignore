@@ -1,0 +1,9 @@
+node_modules
+.next
+.next-verify
+out
+.DS_Store
+npm-debug.log*
+.env*.local
+*.bak
+tsconfig.tsbuildinfo

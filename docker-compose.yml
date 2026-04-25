@@ -1,0 +1,10 @@
+services:
+  wedgeops:
+    build: .
+    image: wedgeops:latest
+    container_name: wedgeops
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
