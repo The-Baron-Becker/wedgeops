@@ -7,6 +7,9 @@ type State = "idle" | "submitting" | "ok" | "error";
 
 export default function WaitlistCTA() {
   const [email, setEmail] = useState("");
+  // Honeypot value — real users never type into the hidden field, bots usually do.
+  // The server silently drops submissions with a non-empty `company`.
+  const [company, setCompany] = useState("");
   const [state, setState] = useState<State>("idle");
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -19,7 +22,7 @@ export default function WaitlistCTA() {
       const res = await fetch(ROUTES.api.waitlist, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, source: "landing-cta" }),
+        body: JSON.stringify({ email, company, source: "landing-cta" }),
       });
       const data = (await res.json().catch(() => null)) as
         | { ok?: boolean; error?: string }
@@ -62,6 +65,22 @@ export default function WaitlistCTA() {
             className="mt-6 flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
             noValidate
           >
+            {/* Honeypot field — visually hidden but not display:none (bots skip those).
+                Real users won't focus a tab-removed field with autocomplete off. */}
+            <div
+              aria-hidden="true"
+              className="absolute left-[-10000px] top-auto h-px w-px overflow-hidden"
+            >
+              <label htmlFor="cta-company">Company</label>
+              <input
+                id="cta-company"
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+              />
+            </div>
             <label htmlFor="cta-email" className="sr-only">
               Email address
             </label>

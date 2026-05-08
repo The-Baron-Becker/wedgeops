@@ -4,7 +4,15 @@ services:
     image: wedgeops:latest
     container_name: wedgeops
     ports:
-      - "3000:3000"
+      - "3847:3000"
     environment:
       - NODE_ENV=production
+      - WEDGEOPS_DATA_DIR=/app/data
+      # Set to enable GET /api/waitlist (admin signup export). Leave unset to disable.
+      # - WEDGEOPS_ADMIN_TOKEN=your-secret-here
+    volumes:
+      - wedgeops-data:/app/data
     restart: unless-stopped
+
+volumes:
+  wedgeops-data:
