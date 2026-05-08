@@ -11,5 +11,6 @@ export const ROUTES = {
   api: {
     health: "/api/health",
     waitlist: "/api/waitlist",
+    event: "/api/event",
   },
 } as const;

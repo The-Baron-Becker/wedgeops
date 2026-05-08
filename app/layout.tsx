@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { siteConfig } from "@/config/site";
+import Analytics from "@/components/wedgeops/Analytics";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -101,6 +102,7 @@ export default function RootLayout({
           Skip to content
         </a>
         {children}
+        <Analytics />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

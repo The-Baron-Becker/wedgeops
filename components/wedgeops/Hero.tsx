@@ -1,3 +1,7 @@
+"use client";
+
+import { track } from "@/lib/track";
+
 export default function Hero() {
   return (
     <section className="mx-auto max-w-6xl px-6 pt-16 pb-20 sm:pt-24 sm:pb-28">
@@ -18,15 +22,21 @@ export default function Hero() {
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
             <a
               href="#cta"
+              onClick={() =>
+                track("cta_click", { source: "hero", label: "trial" })
+              }
               className="inline-flex items-center justify-center rounded-full bg-stone-900 text-amber-50 px-6 py-3 text-base font-medium hover:bg-stone-700 transition-colors"
             >
               Start 14-day free trial
             </a>
             <a
-              href="#features"
+              href="#see-it"
+              onClick={() =>
+                track("cta_click", { source: "hero", label: "see_product" })
+              }
               className="inline-flex items-center justify-center rounded-full border border-stone-300 bg-white px-6 py-3 text-base font-medium text-stone-900 hover:border-stone-900 transition-colors"
             >
-              See the product →
+              See it in action →
             </a>
           </div>
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-stone-500">

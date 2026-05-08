@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { track } from "@/lib/track";
 
 const navLinks = [
   { href: "#features", label: "Features" },
@@ -56,6 +57,9 @@ export default function SiteHeader() {
         <div className="hidden md:block">
           <a
             href="#cta"
+            onClick={() =>
+              track("cta_click", { source: "header", label: "early_access" })
+            }
             className="text-sm font-medium rounded-full bg-stone-900 text-amber-50 px-4 py-2 hover:bg-stone-700 transition-colors"
           >
             Get early access

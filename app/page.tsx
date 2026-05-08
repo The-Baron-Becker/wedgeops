@@ -1,6 +1,7 @@
 import Hero from "@/components/wedgeops/Hero";
 import Features from "@/components/wedgeops/Features";
 import HowItWorks from "@/components/wedgeops/HowItWorks";
+import SeeItInAction from "@/components/wedgeops/SeeItInAction";
 import Dashboard from "@/components/wedgeops/Dashboard";
 import Compare from "@/components/wedgeops/Compare";
 import Testimonials from "@/components/wedgeops/Testimonials";
@@ -18,6 +19,7 @@ export default function Home() {
         <Hero />
         <Features />
         <HowItWorks />
+        <SeeItInAction />
         <Dashboard />
         <Compare />
         <Testimonials />
