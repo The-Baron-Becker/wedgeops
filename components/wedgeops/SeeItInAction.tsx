@@ -27,7 +27,20 @@ export default function SeeItInAction() {
   const [typed, setTyped] = useState<string[]>([]);
   const [revealed, setRevealed] = useState<number>(0);
   const [hasRun, setHasRun] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
   const sectionRef = useRef<HTMLElement | null>(null);
+
+  // Detect prefers-reduced-motion (WCAG 2.3.3) — when on, we skip the typewriter
+  // and stagger animations and render the final state immediately. Listens for
+  // changes so toggling system setting mid-session is honored.
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
+    mq.addEventListener?.("change", handler);
+    return () => mq.removeEventListener?.("change", handler);
+  }, []);
 
   // Auto-start when the section scrolls into view (once).
   useEffect(() => {
@@ -65,6 +78,15 @@ export default function SeeItInAction() {
   async function runDemo() {
     setTyped([]);
     setRevealed(0);
+    // Honor prefers-reduced-motion: jump straight to the completed state
+    // instead of typing/revealing line-by-line. Users still see the result;
+    // they just don't get the staggered motion.
+    if (reducedMotion) {
+      setTyped([...BRIEF_LINES]);
+      setRevealed(RUN_OF_SHOW.length);
+      setPhase("done");
+      return;
+    }
     setPhase("typing");
     for (let i = 0; i < BRIEF_LINES.length; i++) {
       await wait(420);

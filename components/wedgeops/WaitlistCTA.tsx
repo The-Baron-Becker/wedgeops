@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ROUTES } from "@/lib/constants";
 
 type State = "idle" | "submitting" | "ok" | "error";
 
 export default function WaitlistCTA() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   // Honeypot value — real users never type into the hidden field, bots usually do.
   // The server silently drops submissions with a non-empty `company`.
@@ -29,8 +31,16 @@ export default function WaitlistCTA() {
         | null;
       if (res.ok && data?.ok) {
         setState("ok");
-        setMsg("You're on the list — look for an invite within 24 hours.");
+        setMsg("You're on the list — redirecting…");
         setEmail("");
+        // Hand off to the dedicated /thanks page so we get a clean conversion
+        // pageview (signup_complete event), and so the user lands on a real
+        // confirmation surface instead of a fading inline message. Use a
+        // small delay so the success label renders before the route swap.
+        router.prefetch?.("/thanks");
+        window.setTimeout(() => {
+          router.push("/thanks");
+        }, 250);
       } else {
         setState("error");
         setMsg(data?.error ?? "Something went wrong. Try again?");

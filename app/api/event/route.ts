@@ -47,6 +47,8 @@ const ALLOWED_EVENTS = new Set([
   "pricing_period_change",
   "demo_play",
   "waitlist_focus",
+  // Conversion event fired from /thanks after a successful waitlist signup.
+  "signup_complete",
 ]);
 
 const MAX_PROP_VALUE_LEN = 200;

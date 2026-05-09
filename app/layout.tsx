@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { siteConfig } from "@/config/site";
 import Analytics from "@/components/wedgeops/Analytics";
+import FAQJsonLd from "@/components/wedgeops/FAQJsonLd";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -107,6 +108,7 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        <FAQJsonLd />
       </body>
     </html>
   );
