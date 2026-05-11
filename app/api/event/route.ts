@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
+import { checkSameOrigin } from "@/lib/origin-check";
 
 // Force this route to use the Node.js runtime (we read/write files + use process.env).
 export const runtime = "nodejs";
@@ -81,6 +82,10 @@ async function appendEvent(entry: Record<string, unknown>): Promise<void> {
 // ---------- POST /api/event ----------
 export async function POST(req: Request) {
   try {
+    // CSRF defense — reject cross-origin POSTs before parsing the body.
+    const blocked = checkSameOrigin(req);
+    if (blocked) return blocked;
+
     const ip = clientIp(req);
     const rl = takeToken(ip);
     if (!rl.ok) {

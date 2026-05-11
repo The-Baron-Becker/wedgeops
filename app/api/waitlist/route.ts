@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { promises as fs } from "fs";
 import path from "path";
+import { checkSameOrigin } from "@/lib/origin-check";
+
+// Same shape we set in /referral/[ref]/route.ts. Centralized here so the
+// names don't drift.
+const REF_COOKIE = "wedgeops_ref";
+const VALID_REF = /^[A-Za-z0-9_-]{1,64}$/;
 
 // Force this route to use the Node.js runtime (we read/write files + use process.env).
 export const runtime = "nodejs";
@@ -53,6 +60,10 @@ async function appendSignup(entry: Record<string, unknown>): Promise<void> {
 // ---------- POST /api/waitlist ----------
 export async function POST(req: Request) {
   try {
+    // CSRF defense — reject cross-origin POSTs before parsing the body.
+    const blocked = checkSameOrigin(req);
+    if (blocked) return blocked;
+
     const ip = clientIp(req);
     const rl = takeToken(ip);
     if (!rl.ok) {
@@ -93,11 +104,23 @@ export async function POST(req: Request) {
       );
     }
 
+    // Read the referral cookie if present — set by /referral/[ref] when the
+    // visitor lands via a shared link. Re-validate the value before trusting
+    // it (cookie store could be tampered with by the client).
+    let ref: string | undefined;
+    try {
+      const c = (await cookies()).get(REF_COOKIE);
+      if (c?.value && VALID_REF.test(c.value)) ref = c.value;
+    } catch {
+      /* cookies() is unavailable in some test contexts — safe to ignore */
+    }
+
     const entry = {
       email,
       role: typeof body.role === "string" ? body.role.slice(0, 80) : undefined,
       source:
         typeof body.source === "string" ? body.source.slice(0, 120) : "landing",
+      ref,
       ip,
       at: new Date().toISOString(),
     };
@@ -148,6 +171,55 @@ export async function GET(req: Request) {
         return { _raw: l };
       }
     });
+
+    const url = new URL(req.url);
+    const format = url.searchParams.get("format");
+
+    if (format === "csv") {
+      // Wide CSV with one column per first-seen field. Compliance teams paste
+      // straight into Excel/Sheets without unwrapping nested JSON.
+      const headerOrder: string[] = [];
+      const seen = new Set<string>();
+      for (const s of signups) {
+        for (const k of Object.keys(s)) {
+          if (!seen.has(k)) {
+            seen.add(k);
+            headerOrder.push(k);
+          }
+        }
+      }
+
+      const escape = (v: unknown): string => {
+        if (v === undefined || v === null) return "";
+        const s = typeof v === "string" ? v : JSON.stringify(v);
+        // RFC 4180-ish: wrap in quotes if it contains comma, quote, or newline.
+        if (/[",\r\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+        return s;
+      };
+
+      const rows = [headerOrder.join(",")];
+      for (const s of signups) {
+        rows.push(
+          headerOrder.map((k) => escape((s as Record<string, unknown>)[k])).join(",")
+        );
+      }
+      const body = rows.join("\n") + "\n";
+
+      const stamp = new Date()
+        .toISOString()
+        .replace(/[:.]/g, "")
+        .slice(0, 15); // YYYYMMDDTHHMMSS
+      const filename = `wedgeops-waitlist-${stamp}.csv`;
+      return new NextResponse(body, {
+        status: 200,
+        headers: {
+          "content-type": "text/csv; charset=utf-8",
+          "content-disposition": `attachment; filename="${filename}"`,
+          "cache-control": "no-store",
+        },
+      });
+    }
+
     return NextResponse.json({ ok: true, count: signups.length, signups });
   } catch (err) {
     return NextResponse.json(

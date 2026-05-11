@@ -3,6 +3,8 @@ import "./globals.css";
 import { siteConfig } from "@/config/site";
 import Analytics from "@/components/wedgeops/Analytics";
 import FAQJsonLd from "@/components/wedgeops/FAQJsonLd";
+import CookieConsent from "@/components/wedgeops/CookieConsent";
+import ErrorReporter from "@/components/wedgeops/ErrorReporter";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -103,7 +105,9 @@ export default function RootLayout({
           Skip to content
         </a>
         {children}
+        <ErrorReporter />
         <Analytics />
+        <CookieConsent />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
