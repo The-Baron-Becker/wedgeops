@@ -26,8 +26,25 @@ const CSP = [
   "object-src 'none'",
 ].join("; ");
 
+// Content-Security-Policy-Report-Only: same policy as the enforcing CSP, plus
+// a report-uri pointing at our /api/csp-report endpoint. Browsers will POST a
+// JSON violation report for anything that WOULD be blocked under a tightened
+// policy (e.g., after we remove 'unsafe-inline' on script-src). We keep the
+// enforcing CSP permissive for now and watch the report stream for two weeks
+// before tightening — this is the "stage the change in production with real
+// traffic" pattern that lets us swap to a nonce-based scheme without breaking
+// the live site.
+const CSP_REPORT_ONLY = CSP + "; report-uri /api/csp-report; report-to csp-endpoint";
+const REPORT_TO = JSON.stringify({
+  group: "csp-endpoint",
+  max_age: 10886400,
+  endpoints: [{ url: "/api/csp-report" }],
+});
+
 const SECURITY_HEADERS = [
   { key: "Content-Security-Policy", value: CSP },
+  { key: "Content-Security-Policy-Report-Only", value: CSP_REPORT_ONLY },
+  { key: "Report-To", value: REPORT_TO },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },

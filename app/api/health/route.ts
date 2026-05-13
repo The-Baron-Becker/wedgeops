@@ -81,6 +81,9 @@ export async function GET() {
       admin_token_configured: Boolean(process.env.WEDGEOPS_ADMIN_TOKEN),
       origin_check_enabled:
         process.env.WEDGEOPS_DISABLE_ORIGIN_CHECK !== "1",
+      metrics_endpoint: true,
+      csp_report_endpoint: true,
+      cache_control_middleware: true,
       data_dir: DATA_DIR,
     },
   });
