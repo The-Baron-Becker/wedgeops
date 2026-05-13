@@ -66,28 +66,85 @@ export const viewport: Viewport = {
   themeColor: "#fbf7f4",
 };
 
+// Structured-data graph emitted in the <head>. We use schema.org's @graph
+// pattern so a single JSON-LD block declares multiple entities that link to
+// each other by @id. Google specifically rewards Organization + WebSite +
+// SoftwareApplication blocks emitted together (brand SERP cards, sitelinks
+// search box, AppCard rich result respectively).
+const ORG_ID = `${siteConfig.url}#organization`;
+const SITE_ID = `${siteConfig.url}#website`;
+const APP_ID = `${siteConfig.url}#software`;
+
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  name: "WedgeOps",
-  applicationCategory: "BusinessApplication",
-  operatingSystem: "Web",
-  offers: [
+  "@graph": [
     {
-      "@type": "Offer",
-      name: "Solo",
-      price: "119",
-      priceCurrency: "USD",
+      "@type": "Organization",
+      "@id": ORG_ID,
+      name: "WedgeOps",
+      url: siteConfig.url,
+      logo: `${siteConfig.url}/opengraph-image`,
+      description:
+        "WedgeOps builds an AI-native operations suite for independent and boutique wedding planners.",
+      foundingDate: "2026",
+      sameAs: [
+        "https://twitter.com/wedgeops",
+      ],
+      contactPoint: [
+        {
+          "@type": "ContactPoint",
+          contactType: "customer support",
+          email: "hello@wedgeops.com",
+          availableLanguage: ["English"],
+        },
+      ],
     },
     {
-      "@type": "Offer",
-      name: "Studio",
-      price: "199",
-      priceCurrency: "USD",
+      "@type": "WebSite",
+      "@id": SITE_ID,
+      url: siteConfig.url,
+      name: "WedgeOps",
+      publisher: { "@id": ORG_ID },
+      inLanguage: "en-US",
+      // SearchAction makes WedgeOps eligible for the sitelinks search box on
+      // Google's brand SERP. Even with no on-site search results page today,
+      // declaring the action signals intent and lets us wire it up later
+      // without re-shipping markup.
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${siteConfig.url}/?q={search_term_string}`,
+        },
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": APP_ID,
+      name: "WedgeOps",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      publisher: { "@id": ORG_ID },
+      isPartOf: { "@id": SITE_ID },
+      offers: [
+        {
+          "@type": "Offer",
+          name: "Solo",
+          price: "119",
+          priceCurrency: "USD",
+        },
+        {
+          "@type": "Offer",
+          name: "Studio",
+          price: "199",
+          priceCurrency: "USD",
+        },
+      ],
+      description:
+        "WedgeOps is an AI-native ops suite for independent wedding planners: run-of-show docs, vendor CRM, budget tracking, and a client portal.",
     },
   ],
-  description:
-    "WedgeOps is an AI-native ops suite for independent wedding planners: run-of-show docs, vendor CRM, budget tracking, and a client portal.",
 };
 
 export default function RootLayout({
